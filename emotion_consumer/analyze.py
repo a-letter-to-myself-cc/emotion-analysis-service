@@ -13,7 +13,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 def send_to_store_service(emotion_result: dict):
     try:
         response = requests.post(
-            "http://localhost:8009/api/emotion-results/"  # 개발 환경 포트 기준
+            "http://localhost:8009/api/emotion-results/",  # 개발 환경 포트 기준
             json=emotion_result,
             headers={"Content-Type": "application/json"}
         )
