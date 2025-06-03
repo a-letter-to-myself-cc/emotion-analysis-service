@@ -1,11 +1,12 @@
-version: '3.3'
+version: '3.8'
 
 services:
   emotion-db:
     image: postgres:15
-    container_name: postgres-emotion
+    container_name: emotion-db
+    restart: always
     env_file:
-      - .env              # ✅ .env 파일에서 환경 변수 불러오기
+      - .env
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -14,20 +15,29 @@ services:
       - "55432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - emotion-net
 
-  web:
+  django-emotion:
     build: .
     container_name: django-emotion
     command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app
     ports:
       - "8008:8000"
+    volumes:
+      - .:/app
     env_file:
-      - .env              # ✅ Django에 .env 주입
+      - .env
     depends_on:
       - emotion-db
+    networks:
+      - emotion-net
 
 volumes:
   postgres_data:
+
+networks:
+  emotion-net:
+    driver: bridge
+
 
