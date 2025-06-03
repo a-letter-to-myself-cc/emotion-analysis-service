@@ -1,16 +1,32 @@
 import openai
 import json
-from datetime import datetime
 import os
-from dotenv import load_dotenv
 import requests
+from datetime import datetime
+from dotenv import load_dotenv
 
+# ✅ 환경 변수 로드
 load_dotenv()
-
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# ✅ 감정 검증을 위한 유효 값 정의
+VALID_MOODS = {"기쁨", "슬픔", "분노", "불안", "사랑", "중립"}
+VALID_DETAILED = {
+    "희열", "만족", "감사", "설렘",
+    "외로움", "상실감", "후회",
+    "짜증", "분개", "억울함",
+    "두려움", "긴장", "초조",
+    "로맨스", "우정", "존경",
+    "해당 없음",
+}
+
+def is_valid_emotion(data):
+    """감정 JSON 형식의 유효성 검사"""
+    return data.get("mood") in VALID_MOODS and data.get("detailed_mood") in VALID_DETAILED
 
 
 def send_to_store_service(emotion_result: dict):
+    """emotion-store 서비스로 분석 결과 전송"""
     try:
         response = requests.post(
             "http://localhost:8009/api/emotion-results/",  # 개발 환경 포트 기준
@@ -21,7 +37,6 @@ def send_to_store_service(emotion_result: dict):
         print("✅ 감정 결과 저장 성공:", response.json())
     except requests.RequestException as e:
         print("❌ 감정 결과 저장 실패:", str(e))
-        
 
 
 def analyze_letter(letter):
@@ -63,19 +78,28 @@ def analyze_letter(letter):
         )
 
         content = response.choices[0].message.content.strip()
-        emotion_data = json.loads(content)
+
+        try:
+            emotion_data = json.loads(content)
+        except json.JSONDecodeError as je:
+            print(f"❌ JSON 파싱 실패: {content} / {je}")
+            return
+
+        if not is_valid_emotion(emotion_data):
+            raise ValueError(f"❌ 잘못된 감정 결과: {emotion_data}")
 
         print(f"✅ 감정 분석 결과 - ID: {letter['letter_id']}, 감정: {emotion_data['mood']}, 세부감정: {emotion_data['detailed_mood']}")
 
-        # ✅ emotion-store에 저장
-       # 전송할 데이터 구성
+        # ✅ 전송할 데이터 구성
         emotion_result = {
-            "user": letter["user_id"],  # 🟡 사전에 포함되어 있어야 함
+            "user": letter["user_id"],
             "letter_id": letter["letter_id"],
             "dominant_emotion": emotion_data["mood"],
             "detailed_emotion": emotion_data["detailed_mood"],
-            "emotion_scores": {emotion_data["mood"]: 1.0}  # 또는 실제 분석 결과 기반
+            "emotion_scores": {emotion_data["mood"]: 1.0}  # 간단화된 예시
         }
+
+        # ✅ emotion-store 서비스로 전송
         send_to_store_service(emotion_result)
 
     except Exception as e:

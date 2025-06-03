@@ -2,9 +2,11 @@
 Django settings for letter_project project.
 """
 
+
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+
 
 
 # BASE_DIR 설정
@@ -12,6 +14,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # .env 파일 로드
 load_dotenv(os.path.join(BASE_DIR, '.env'))
+print("🔐 DB_PASSWORD from .env:", os.getenv("DB_PASSWORD"))
+
 
 # 환경 변수 사용 예시
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -94,10 +98,11 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'emotion_analysis.authentication.RemoteJWTAuthentication',
     ],
-    'TEST_REQUEST_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
     ],
 }
+
