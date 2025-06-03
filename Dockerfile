@@ -5,7 +5,7 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # 3. 시스템 패키지 설치 (Django가 필요로 할 수 있음)
-RUN apt-get update && apt-get install -y gcc libpq-dev
+RUN apt-get update && apt-get install -y gcc libpq-dev || apt-get install -f -y
 
 # 4. requirements.txt 복사 및 설치
 COPY requirements.txt .
