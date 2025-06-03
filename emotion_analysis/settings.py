@@ -22,7 +22,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG') == 'True'
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
-SECRET_KEY = 'django-insecure-x5pvgjw+=nbwg@aeuv37iz=i6@gzl%)(=l80v%v#to$my(whjl'
+#SECRET_KEY = 'django-insecure-x5pvgjw+=nbwg@aeuv37iz=i6@gzl%)(=l80v%v#to$my(whjl'
 
 DEBUG = True
 
